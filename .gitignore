@@ -246,3 +246,4 @@ fabric.properties
 /.idea/vcs.xml
 /test_script.py
 /.idea/git_toolbox_prj.xml
+/datafiles/incoming/*/*
