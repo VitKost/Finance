@@ -1,70 +1,82 @@
+--PostgreSQL database
+create schema if not exists "accounting"
+    authorization postgres;
+create schema if not exists "trading"
+    authorization postgres;
 
-CREATE USER ACCOUNTING IDENTIFIED BY ACCOUNTING;
+drop table if exists accounting.accounts_owners;
+drop table if exists trading.trades;
+drop table if exists accounting.accounts;
+drop table if exists trading.exchange_rates;
 
-DROP TABLE ACCOUNTING.ACCOUNTS_OWNERS;
-DROP TABLE TRADING.TRADES;
-DROP TABLE ACCOUNTING.ACCOUNTS;
-
-CREATE TABLE ACCOUNTING.ACCOUNTS
+create table accounting.accounts
 (
-    ACCOUNT_ID VARCHAR2(10) NOT NULL,
-    ACCOUNT_NAME VARCHAR2(20) NOT NULL UNIQUE,
-    ACCOUNT_DESCRIPTION VARCHAR2(40),
-    CREATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    UPDATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    CURRENCY VARCHAR2(3) NOT NULL,
-    CURRENCY_AMOUNT FLOAT DEFAULT 0.0 NOT NULL,
-    
-    CONSTRAINT ACCOUNT_PK PRIMARY KEY (ACCOUNT_ID)
+    account_id varchar(10) not null,
+    account_name varchar(20) not null unique,
+    account_description varchar(40),
+    create_date timestamp default current_timestamp,
+    update_date timestamp default current_timestamp,
+    currency varchar(3) not null,
+    currency_amount float4 default 0.0 not null,
+
+    constraint account_pk primary key (account_id)
 );
 
-DROP TABLE ACCOUNTING.ACCOUNTS_OWNERS;
-
-CREATE TABLE ACCOUNTING.ACCOUNTS_OWNERS
+create table accounting.accounts_owners
 (
-    ACCOUNT_ID VARCHAR2(10) NOT NULL UNIQUE,
-    OWNER_NAME VARCHAR2(20) NOT NULL,
-    OWNER_COUNTRY_RESIDENCE VARCHAR2(2) NOT NULL,
-    BIRTH_DATE TIMESTAMP NOT NULL,
-    CREATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    UPDATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    
-    CONSTRAINT ACCOUNTS_OWNERS_FK FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTING.ACCOUNTS (ACCOUNT_ID)
+    account_id varchar(10) not null unique,
+    owner_name varchar(20) not null,
+    owner_country_residence varchar(2) not null,
+    birth_date timestamp not null,
+    create_date timestamp default current_timestamp,
+    update_date timestamp default current_timestamp,
+
+    constraint accounts_owners_fk foreign key (account_id) references accounting.accounts (account_id)
 );
 
+grant references on accounting.accounts to trading;
 
-CREATE USER TRADING IDENTIFIED BY TRADING;
+create table trading.trades
+(
+    trade_id bigint not null,
+    account_id varchar(10) not null,
+    trade_type varchar(10) not null,
+    trade_amount float4 not null,
+    trade_currency varchar(3) not null,
+    effective_date timestamp default current_timestamp,
+    update_date timestamp default current_timestamp,
 
-GRANT REFERENCES ON ACCOUNTING.ACCOUNTS TO TRADING;
-
-DROP TABLE TRADING.TRADES;
-
-CREATE TABLE TRADING.TRADES
-(   
-    TRADE_ID INT NOT NULL,
-    ACCOUNT_ID VARCHAR2(10) NOT NULL,
-    TRADE_TYPE VARCHAR2(10) NOT NULL,
-    TRADE_AMOUNT FLOAT NOT NULL,
-    TRADE_CURRENCY VARCHAR2(3) NOT NULL,
-    EFFECTIVE_DATE TIMESTAMP DEFAULT SYSDATE,
-    UPDATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    
-    CONSTRAINT TRADES_PK PRIMARY KEY (TRADE_ID),
-    CONSTRAINT TRADES_FK FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNTING.ACCOUNTS (ACCOUNT_ID)
+    constraint trades_pk primary key (trade_id),
+    constraint trades_fk foreign key (account_id) references accounting.accounts (account_id)
 );
 
-DROP TABLE TRADING.EXCHANGE_RATES;
+drop table trading.exchange_rates;
 
-CREATE TABLE TRADING.EXCHANGE_RATES
-(   
-    FROM_CURRENCY VARCHAR2(3) NOT NULL,
-    TO_CURRENCY VARCHAR2(3) NOT NULL,
-    RATE FLOAT NOT NULL,
-    EFFECTIVE_DATE TIMESTAMP DEFAULT SYSDATE,
-    UPDATE_DATE TIMESTAMP DEFAULT SYSDATE,
-    
-    CONSTRAINT EXCHANGE_RATES_UN UNIQUE (FROM_CURRENCY, TO_CURRENCY, EFFECTIVE_DATE)
+create table trading.exchange_rates
+(
+    from_currency varchar(3) not null,
+    to_currency varchar(3) not null,
+    rate float4 not null,
+    effective_date timestamp default current_timestamp,
+    update_date timestamp default current_timestamp,
+
+    constraint exchange_rates_un unique (from_currency, to_currency, effective_date)
 );
 
-commit;
+  create or replace procedure accounting.ins_account (in_account_id varchar, in_account_name varchar, in_account_description varchar, in_currency varchar)
+  language plpgsql
+  as $$
+  	declare
+    begin
+      insert into accounts (
+        account_id,
+        account_name,
+        account_description,
+        currency )
+      values (
+        in_account_id,
+        in_account_name,
+        in_account_description,
+        in_currency );
+    end; $$
 
