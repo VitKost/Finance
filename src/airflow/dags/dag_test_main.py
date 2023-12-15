@@ -4,10 +4,19 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 import argparse
 import calendar
+from airflow.sensors.filesystem import FileSensor
+from import_for_dags import *
+from src.tools.airflow_sensors import FileSensorWithMask
+import os
 
+
+file_sensing_task = FileSensorWithMask(task_id='sense_the_csv',
+                                   filepath=INCOMING_MESSAGES_PATH,
+                                   poke_interval=10)
 
 def step1(name: str):
     print(f"Hello, my name is {name}!")
+    print(f"Hi, filepath is {file_sensing_task.filepath}")
 
 def step2(bday: str):
     birthdate: datetime = datetime.strptime(bday, '%Y-%m-%d')

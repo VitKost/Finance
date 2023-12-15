@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from dag_test_main import step1, step2, step3
+from dag_test_main import file_sensing_task, step1, step2, step3
 
 
 default_args = {
@@ -12,7 +12,7 @@ default_args = {
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 2,
-    'retry_delay': timedelta(minutes=1)
+    'retry_delay': timedelta(minutes=10)
 }
 
 
@@ -46,4 +46,4 @@ task3 = PythonOperator(
     )
 
 # task sequence
-task1 >> task2 >> task3
+file_sensing_task >> task1 >> task2 >> task3
