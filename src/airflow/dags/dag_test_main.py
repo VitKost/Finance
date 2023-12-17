@@ -8,15 +8,19 @@ from airflow.sensors.filesystem import FileSensor
 from import_for_dags import *
 from src.tools.airflow_sensors import FileSensorWithMask
 import os
+import glob
 
 
-file_sensing_task = FileSensorWithMask(task_id='sense_the_csv',
-                                   filepath=INCOMING_MESSAGES_PATH,
+file_sensing_task = FileSensor(task_id='sense_the_csv',
+                                   filepath=INCOMING_MESSAGES_PATH + '/*_CSV_LOAD_*.csv',
                                    poke_interval=10)
 
-def step1(name: str):
+def step1(name: str, ti):
     print(f"Hello, my name is {name}!")
-    print(f"Hi, filepath is {file_sensing_task.filepath}")
+    files = glob.glob(INCOMING_MESSAGES_PATH + '/*_CSV_LOAD_*.csv')
+    files.sort(key = os.path.getmtime)
+    print(files)
+    ti.xcom_push(key='csv_file_name', value=files[0])
 
 def step2(bday: str):
     birthdate: datetime = datetime.strptime(bday, '%Y-%m-%d')
