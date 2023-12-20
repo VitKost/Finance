@@ -28,14 +28,12 @@ myDag = DAG(
 task1 = PythonOperator(
     task_id='print_name',
     python_callable=step1,
-    op_args=['Sam'],
     dag=myDag,
     )
 
 task2 = PythonOperator(
     task_id='print_age',
     python_callable=step2,
-    op_kwargs={'bday': '2004-09-15'},
     dag=myDag,
     )
 
