@@ -1,10 +1,15 @@
-import pandas
+from pyspark.sql import SparkSession
 
 class Parser:
     def __init__(self):
+        self.spark = SparkSession \
+            .builder \
+            .appName("Python Spark SQL basic example") \
+            .config("spark.some.config.option", "some-value") \
+            .getOrCreate()
         pass
 
 class CSVParser(Parser):
-    def __init__(self, filename):
+    def __init__(self, filename, delimeter):
         super().__init__()
-        self.data = pandas.read_csv(filename)
+        self.spark.read.option("delimeter", delimeter).option("header", True).csv(filename)
