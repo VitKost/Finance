@@ -9,7 +9,7 @@ drop table if exists trading.trades;
 drop table if exists accounting.accounts;
 drop table if exists trading.exchange_rates;
 
-create table accounting.accounts
+create table accounting.accountss
 (
     account_id varchar(10) not null,
     account_name varchar(20) not null unique,
@@ -50,8 +50,6 @@ create table trading.trades
     constraint trades_fk foreign key (account_id) references accounting.accounts (account_id)
 );
 
-drop table trading.exchange_rates;
-
 create table trading.exchange_rates
 (
     from_currency varchar(3) not null,
@@ -68,7 +66,7 @@ create table trading.exchange_rates
   as $$
   	declare
     begin
-      insert into accounts (
+      insert into accounting.accounts (
         account_id,
         account_name,
         account_description,
