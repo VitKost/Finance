@@ -10,6 +10,12 @@ class Parser:
         pass
 
 class CSVParser(Parser):
-    def __init__(self, filename, delimeter):
+    def __init__(self):
         super().__init__()
-        self.spark.read.option("delimeter", delimeter).option("header", True).csv(filename)
+
+    def parse_csv_file(self, filename, delimiter):
+        self.message = self.spark.read.option("delimiter", delimiter).option("header", True).csv(filename)
+        self.message = self.message.first().asDict()
+
+    def get_message(self):
+        return self.message

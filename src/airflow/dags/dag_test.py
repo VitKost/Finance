@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from dag_test_main import file_sensing_task, step1, step2, step3
+from dag_test_main import file_sensing_task, findCSVLoadFile, step2, step3
 
 
 default_args = {
@@ -20,14 +20,14 @@ myDag = DAG(
     dag_id='myFirstDag',
     default_args=default_args,
     start_date=datetime(2023, 11, 6),
-    schedule=timedelta(days=1),
+    schedule=timedelta(days=30),
     description="A sample DAG for demonstration."
     )
 
 
 task1 = PythonOperator(
     task_id='print_name',
-    python_callable=step1,
+    python_callable=findCSVLoadFile,
     dag=myDag,
     )
 
